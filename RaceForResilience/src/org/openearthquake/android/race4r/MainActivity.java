@@ -2,6 +2,9 @@ package org.openearthquake.android.race4r;
 
 import java.io.IOException;
 
+import org.openearthquake.android.race4r.net.ServerManager;
+import org.openearthquake.android.race4r.util.StorageManager;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
