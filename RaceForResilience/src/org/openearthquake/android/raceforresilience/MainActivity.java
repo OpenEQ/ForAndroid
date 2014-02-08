@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -28,15 +29,18 @@ public class MainActivity extends Activity {
     private static String myUuid = null;
     private static String regId = null;
     private ServerManager mgrServer = null;
+    private TextView mDisplay = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mDisplay = (TextView) findViewById(R.id.textViewDisplay);
         mgrServer = new ServerManager();
 
         context = getApplicationContext();
         myUuid = StorageManager.getUuid(context);
+
         if (checkPlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(context);
             regId = StorageManager.getRegistrationId(context);
@@ -117,7 +121,7 @@ public class MainActivity extends Activity {
 
             @Override
             protected void onPostExecute(String msg) {
-                //mDisplay.append(msg + "\n");
+                mDisplay.append(msg + "\n");
             }
         }.execute(null, null, null);
     }
