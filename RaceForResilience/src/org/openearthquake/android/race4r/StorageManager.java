@@ -1,4 +1,4 @@
-package org.openearthquake.android.raceforresilience;
+package org.openearthquake.android.race4r;
 
 import java.util.UUID;
 
