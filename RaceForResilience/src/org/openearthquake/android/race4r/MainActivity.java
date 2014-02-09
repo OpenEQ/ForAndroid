@@ -1,8 +1,10 @@
 package org.openearthquake.android.race4r;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
+import org.openearthquake.android.race4r.net.HttpPostAsyncTask;
 import org.openearthquake.android.race4r.net.ServerManager;
 import org.openearthquake.android.race4r.util.StorageManager;
 
@@ -20,6 +22,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -49,6 +52,7 @@ public class MainActivity extends Activity implements LocationListener{
     private TextView mDisplay;
     private TextView mTextLat;
     private TextView mTextLng;
+    private TextView mTextLastUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +68,7 @@ public class MainActivity extends Activity implements LocationListener{
         mDisplay = (TextView) findViewById(R.id.textViewDisplay);
         mTextLat = (TextView) findViewById(R.id.textViewLatitude);
         mTextLng = (TextView) findViewById(R.id.textViewLongitude);
+        mTextLastUpdate = (TextView) findViewById(R.id.textViewLastUpdate);
 
         myUuid = StorageManager.getUuid(context);
 
@@ -85,17 +90,27 @@ public class MainActivity extends Activity implements LocationListener{
             }
         }
     }
-    
-    
-    
+
+    public void onClick(final View v) {
+        switch(v.getId()) {
+            case R.id.buttonRegister:
+                this.registerInBackground();
+                break;
+            case R.id.buttonUnreg:
+                break;
+            case R.id.buttonSend:
+                new HttpPostAsyncTask(this).execute("unreg", myUuid);
+                break;
+        }
+    }
     @Override
     public void onLocationChanged(Location location) {
         this.mLastLocation.set(location);
         // 座標とかを表示する
         this.mTextLat.setText(location.getLatitude() + "");
         this.mTextLng.setText(location.getLongitude() + "");
-        // SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        // this.mEditTextLastUpdate.setText(sdf.format(location.getTime()));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        this.mTextLastUpdate.setText(sdf.format(location.getTime()));
         // this.mEditTextStatus.setText(location.getProvider());
     }
 
@@ -200,7 +215,7 @@ public class MainActivity extends Activity implements LocationListener{
     
     /**
      * Registers the application with GCM servers asynchronously.
-     * <p>
+     *
      * Stores the registration ID and the app versionCode in the application's
      * shared preferences.
      */
@@ -219,7 +234,7 @@ public class MainActivity extends Activity implements LocationListener{
                     // You should send the registration ID to your server over HTTP, so it
                     // can use GCM/HTTP or CCS to send messages to your app.
                     // TODO:GPS Info
-                    mgrServer.sendRegistrationIdToBackend(context, regId, myUuid, 0.0, 0.0);
+                    mgrServer.sendRegistrationIdToBackend(context, regId, myUuid, mLastLocation.getLatitude(), mLastLocation.getLongitude());
 
                     // For this demo: we don't need to send it because the device will send
                     // upstream messages to a server that echo back the message using the
