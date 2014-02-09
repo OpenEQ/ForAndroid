@@ -9,20 +9,66 @@
     tools:context=".MainActivity" >
 
     <Button
-        android:id="@+id/buttonSend"
+        android:id="@+id/buttonRegister"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
+        android:onClick="onClick"
+        android:text="Register" />
+
+    <Button
+        android:id="@+id/buttonSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/buttonRegister"
+        android:layout_below="@+id/buttonRegister"
+        android:onClick="onClick"
         android:text="Send" />
+
+    <Button
+        android:id="@+id/buttonUnreg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/buttonRegister"
+        android:layout_alignBottom="@+id/buttonRegister"
+        android:layout_toRightOf="@+id/buttonRegister"
+        android:onClick="onClick"
+        android:text="UnRegister" />
+
+    <TextView
+        android:id="@+id/textViewLatitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/buttonSend"
+        android:layout_below="@+id/buttonSend"
+        android:text="latitude" />
+
+    <TextView
+        android:id="@+id/textViewLongitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textViewLatitude"
+        android:layout_alignBottom="@+id/textViewLatitude"
+        android:layout_toRightOf="@+id/buttonRegister"
+        android:text="longitude" />
+
+    <TextView
+        android:id="@+id/textViewLastUpdate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textViewLongitude"
+        android:layout_alignBottom="@+id/textViewLongitude"
+        android:layout_toRightOf="@+id/buttonUnreg"
+        android:text="Last Update" />
 
     <TextView
         android:id="@+id/textViewDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/buttonSend"
-        android:layout_below="@+id/buttonSend"
-        android:layout_marginTop="23dp"
-        android:text="TextView" />
+        android:layout_alignLeft="@+id/textViewLatitude"
+        android:layout_below="@+id/textViewLatitude"
+        android:layout_marginTop="148dp"
+        android:text="Display" />
 
 </RelativeLayout>

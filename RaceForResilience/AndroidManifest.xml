@@ -8,21 +8,32 @@
         android:minSdkVersion="15"
         android:targetSdkVersion="18" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        <uses-library android:name="com.android.future.usb.accessory" />
         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"
+            android:resource="@xml/accessory_filter" />
         <activity
-            android:name="org.openearthquake.android.raceforresilience.MainActivity"
+            android:name="org.openearthquake.android.race4r.MainActivity"
+            android:launchMode="singleInstance"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
             </intent-filter>
         </activity>
+        <service android:name=".net.gcm.GcmIntentService" />
     </application>
-
 </manifest>
