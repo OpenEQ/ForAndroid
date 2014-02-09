@@ -42,7 +42,7 @@ public class MainActivity extends Activity implements LocationListener, Runnable
      * Substitute you own sender ID here. This is the project number you got
      * from the API Console, as described in "Getting Started."
      */
-    String SENDER_ID = "150431971887";
+    String SENDER_ID = "";      // SENDER_ID here
 
     public static final int BUF_SIZE = 100;
     public static final int DATABYTE_SIZE = 12;
