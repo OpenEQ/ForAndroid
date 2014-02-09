@@ -1,11 +1,15 @@
 package org.openearthquake.android.race4r;
 
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.openearthquake.android.race4r.net.HttpPostAsyncTask;
 import org.openearthquake.android.race4r.net.ServerManager;
+import org.openearthquake.android.race4r.util.RingBuffer;
 import org.openearthquake.android.race4r.util.StorageManager;
 
 import android.app.Activity;
@@ -14,12 +18,15 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.hardware.usb.UsbAccessory;
+import android.hardware.usb.UsbManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -30,23 +37,32 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-public class MainActivity extends Activity implements LocationListener{
+public class MainActivity extends Activity implements LocationListener, Runnable{
     /**
      * Substitute you own sender ID here. This is the project number you got
      * from the API Console, as described in "Getting Started."
      */
     String SENDER_ID = "150431971887";
 
+    public static final int BUF_SIZE = 100;
+    public static final int DATABYTE_SIZE = 12;
+
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     static final String TAG = "race4r_main";
     private Context context = null;
     
+    private RingBuffer mRingBuffer;
     private LocationManager mLocationManager;
     private Location mLastLocation = new Location("");
     private GoogleCloudMessaging gcm = null;
     private static String myUuid = null;
     private static String regId = null;
     private ServerManager mgrServer = null;
+    private UsbManager mUsbManager;
+    private UsbAccessory mAccessory;
+    private ParcelFileDescriptor mFileDescriptor;
+    private FileInputStream mInputStream;
+    private FileOutputStream mOutputStream;
     
     // Views
     private TextView mDisplay;
@@ -61,7 +77,9 @@ public class MainActivity extends Activity implements LocationListener{
         setContentView(R.layout.activity_main);
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        this.mLocationManager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
+        this.mRingBuffer = new RingBuffer(BUF_SIZE, DATABYTE_SIZE);
+        this.mLocationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+        this.mUsbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
         this.mgrServer = new ServerManager();
 
         // Views
@@ -154,7 +172,32 @@ public class MainActivity extends Activity implements LocationListener{
         return true;
     }
     
-    
+    private void openAccessory(UsbAccessory accessory) {
+        // アクセサリにアクセスするためのファイルディスクリプタを取得
+        
+        Log.d(TAG,"starting openAccessory()");
+        
+        mFileDescriptor = mUsbManager.openAccessory(accessory);
+
+        if (mFileDescriptor != null) {
+            mAccessory = accessory;
+            FileDescriptor fd = mFileDescriptor.getFileDescriptor();
+
+            // 入出力用のストリームを確保
+            mInputStream = new FileInputStream(fd);
+            mOutputStream = new FileOutputStream(fd);
+
+            // この中でアクセサリとやりとりする
+            Log.d(TAG, "Kicking thread");
+            Thread thread = new Thread(null, this, "DemoKit");
+            thread.start();
+            Log.d(TAG, "accessory opened");
+
+            //enableControls(true);
+        } else {
+            Log.d(TAG, "accessory open fail");
+        }
+    }
     
     private void checkGpsCondition() {
         // 利用可能なプロバイダを全部使う(GPSがだめならネットワークみたいな考え方)
@@ -258,5 +301,12 @@ public class MainActivity extends Activity implements LocationListener{
                 mDisplay.append(msg + "\n");
             }
         }.execute(null, null, null);
+    }
+
+
+    @Override
+    public void run() {
+        // TODO Auto-generated method stub
+        
     }
 }
