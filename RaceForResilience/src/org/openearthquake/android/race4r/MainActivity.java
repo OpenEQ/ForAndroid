@@ -97,9 +97,9 @@ public class MainActivity extends Activity implements LocationListener{
                 this.registerInBackground();
                 break;
             case R.id.buttonUnreg:
+                new HttpPostAsyncTask(this).execute("unreg", myUuid);
                 break;
             case R.id.buttonSend:
-                new HttpPostAsyncTask(this).execute("unreg", myUuid);
                 break;
         }
     }
@@ -109,8 +109,7 @@ public class MainActivity extends Activity implements LocationListener{
         // 座標とかを表示する
         this.mTextLat.setText(location.getLatitude() + "");
         this.mTextLng.setText(location.getLongitude() + "");
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        this.mTextLastUpdate.setText(sdf.format(location.getTime()));
+        this.mTextLastUpdate.setText(SimpleDateFormat.getInstance().format(location.getTime()));
         // this.mEditTextStatus.setText(location.getProvider());
     }
 
@@ -154,6 +153,9 @@ public class MainActivity extends Activity implements LocationListener{
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+    
+    
+    
     private void checkGpsCondition() {
         // 利用可能なプロバイダを全部使う(GPSがだめならネットワークみたいな考え方)
         // GPSは空が見えるところでないととれにくい。その場合はネットワークしか座標が取り出せない
