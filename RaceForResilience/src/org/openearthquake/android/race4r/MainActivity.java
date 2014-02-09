@@ -1,23 +1,33 @@
 package org.openearthquake.android.race4r;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.openearthquake.android.race4r.net.ServerManager;
 import org.openearthquake.android.race4r.util.StorageManager;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements LocationListener{
     /**
      * Substitute you own sender ID here. This is the project number you got
      * from the API Console, as described in "Getting Started."
@@ -26,23 +36,42 @@ public class MainActivity extends Activity {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     static final String TAG = "race4r_main";
-
     private Context context = null;
+    
+    private LocationManager mLocationManager;
+    private Location mLastLocation = new Location("");
     private GoogleCloudMessaging gcm = null;
     private static String myUuid = null;
     private static String regId = null;
     private ServerManager mgrServer = null;
-    private TextView mDisplay = null;
+    
+    // Views
+    private TextView mDisplay;
+    private TextView mTextLat;
+    private TextView mTextLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        this.context = getApplicationContext();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mDisplay = (TextView) findViewById(R.id.textViewDisplay);
-        mgrServer = new ServerManager();
+        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        context = getApplicationContext();
+        this.mLocationManager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
+        this.mgrServer = new ServerManager();
+
+        // Views
+        mDisplay = (TextView) findViewById(R.id.textViewDisplay);
+        mTextLat = (TextView) findViewById(R.id.textViewLatitude);
+        mTextLng = (TextView) findViewById(R.id.textViewLongitude);
+
         myUuid = StorageManager.getUuid(context);
+
+        // 最適なプロバイダーを取り出す
+        Criteria criteria = new Criteria();
+        criteria.setSpeedRequired(false);
+        criteria.setBearingRequired(false);
+        criteria.setAltitudeRequired(false);
 
         if (checkPlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(context);
@@ -56,12 +85,97 @@ public class MainActivity extends Activity {
             }
         }
     }
+    
+    
+    
+    @Override
+    public void onLocationChanged(Location location) {
+        this.mLastLocation.set(location);
+        // 座標とかを表示する
+        this.mTextLat.setText(location.getLatitude() + "");
+        this.mTextLng.setText(location.getLongitude() + "");
+        // SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        // this.mEditTextLastUpdate.setText(sdf.format(location.getTime()));
+        // this.mEditTextStatus.setText(location.getProvider());
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    @Override
+    public void onResume() {
+        if (this.mLocationManager != null) {
+            this.checkGpsCondition();
+        }
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        if (this.mLocationManager != null) {
+            this.mLocationManager.removeUpdates(this);
+        }
+        super.onPause();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+    private void checkGpsCondition() {
+        // 利用可能なプロバイダを全部使う(GPSがだめならネットワークみたいな考え方)
+        // GPSは空が見えるところでないととれにくい。その場合はネットワークしか座標が取り出せない
+        List<String> providerList = this.mLocationManager.getProviders(true);
+         
+        // ////////////////////////////////////////////////////////////
+        // プロバイダリストの表示
+        String providerNames = "";
+        for (int i = 0; i < providerList.size(); i++) {
+            providerNames = providerNames + " " + providerList.get(i);
+        }
+        this.mDisplay.setText(providerNames);
+         
+        // GPSが使えない 
+        if (this.mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == false){
+            new AlertDialog.Builder(this)
+                .setTitle("GPSが無効")
+                .setMessage("GPS機能が有効ではありません。\n\n有効にすることで現在位置をさらに正確に検出できるようになります")
+                .setPositiveButton("設定", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            startActivity(new Intent("android.settings.LOCATION_SOURCE_SETTINGS"));
+                        } catch (final ActivityNotFoundException e) {};
+                    }
+                })
+                .setNegativeButton("しない", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {}
+                })
+                .create()
+                .show();
+        }
+    
+        // 全部の機能を使って座標を取り出す
+        for (int i = 0; i < providerList.size(); i++) {
+            this.mLocationManager.requestLocationUpdates(
+                    providerList.get(i), (long) 10000, (float) 1, this);
+        }
     }
     
     /**
