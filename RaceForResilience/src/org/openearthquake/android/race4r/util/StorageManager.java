@@ -1,4 +1,4 @@
-package org.openearthquake.android.raceforresilience;
+package org.openearthquake.android.race4r.util;
 
 import java.util.UUID;
 
@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Log;
+
+import org.openearthquake.android.race4r.MainActivity;
 
 public class StorageManager {
     public static final String PROPERTY_REG_ID = "registration_id";

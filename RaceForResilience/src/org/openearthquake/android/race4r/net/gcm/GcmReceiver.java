@@ -1,4 +1,4 @@
-package org.openearthquake.android.raceforresilience;
+package org.openearthquake.android.race4r.net.gcm;
 
 import android.app.Activity;
 import android.app.IntentService;
@@ -14,6 +14,7 @@ import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import org.openearthquake.android.race4r.MainActivity;
 
 public class GcmReceiver extends WakefulBroadcastReceiver {
     @Override
@@ -87,7 +88,7 @@ public class GcmReceiver extends WakefulBroadcastReceiver {
 
             NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(this)
-            .setSmallIcon(R.drawable.ic_launcher)
+            //.setSmallIcon(R.drawable.ic_launcher)
             .setContentTitle("GCM Notification")
             .setStyle(new NotificationCompat.BigTextStyle()
             .bigText(msg))
